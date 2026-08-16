@@ -56,19 +56,26 @@ def command_add(args):
 def command_update(args):
     payload = {}
 
+    if args.name is not None:
+        payload["name"] = args.name
     if args.price is not None:
         payload["price"] = args.price
     if args.quantity is not None:
-            payload["quantity"] = args.quantity
+        payload["quantity"] = args.quantity
     if args.barcode is not None:
-                payload["barcode"] = args.barcode
-    if args.category is not None:
-                    payload["category"] = args.category
-    if args.brand is not None:
-                    payload["brand"] = args.brand
+        payload["barcode"] = args.barcode
+    if args.image is not None:
+        payload["image_url"] = args.image
+    if args.categories is not None:
+        payload["categories"] = args.categories
+    if args.brands is not None:
+        payload["brands"] = args.brands
+    if args.ingredients is not None:
+        payload["ingredients"] = args.ingredients
 
     if not payload:
           print("Provide --price or --quantity")
+          return
 
     result = api_request("PATCH", args.url, f"/inventory/{args.id}", payload)
     if result is not None:
