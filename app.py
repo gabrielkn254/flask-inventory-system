@@ -45,14 +45,14 @@ def add_item():
         items = load_db()
         item = {
             "id": len(items) + 1,
-            "barcode": openfood_product,
+            "barcode": openfood_product.get("barcode"),
             "name": str(data["name"]).strip(),
             "quantity": quantity,
             "price": price,
-            "image_url": openfood_product.image_url,
-            "categories": openfood_product.categories,
-            "brands": openfood_product.brand,
-            "ingredients": openfood_product.ingredients
+            "image_url": openfood_product.get("image_url"),
+            "categories": openfood_product.get("categories"),
+            "brands": openfood_product.get("brand"),
+            "ingredients": openfood_product.get("ingredients")
         }
         
         items.append(item)
