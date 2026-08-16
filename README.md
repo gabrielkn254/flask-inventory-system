@@ -32,3 +32,5 @@ flask-inventory-system/
     ├── test_cli.py
     └── test_external_api.py
 ```
+
+
