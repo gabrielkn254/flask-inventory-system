@@ -23,9 +23,9 @@
         {
             "id": 3,
             "barcode": null,
-            "name": "afia",
-            "quantity": 20,
-            "price": 200.0,
+            "name": "Nescafe Coffee",
+            "quantity": 40,
+            "price": 180.0,
             "category": null,
             "brand": null,
             "ingredients": []

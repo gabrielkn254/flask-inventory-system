@@ -82,8 +82,7 @@ def update_item(item_id):
     item = next((i for i in items if i["id"] == item_id), None)
 
     if item is None:
-        return jsonify({
-            "error": "Item not found"}), 404
+        return jsonify({"error": "Item not found"}), 404
 
     # get & validate data
     data = request.get_json(silent=True) or {}
@@ -123,7 +122,7 @@ def update_item(item_id):
             item = each
 
     save_db(items)
-    return jsonify({"Updated": item}), 200
+    return jsonify({"Updated Item": item, "message": "Item was successfully updated"}), 200
 
 
 
@@ -144,6 +143,11 @@ def delete_item(item_id):
 
     # delete item
     items.remove(item)
+    for index, each in enumerate(items, start=1):
+        each["id"] = index
+
+    # updated db
+    save_db(items)
     return jsonify({
         "message": "Item deleted successfully",
         "item": item}), 200
