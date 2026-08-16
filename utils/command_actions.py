@@ -9,7 +9,7 @@ def api_request(method, base_url, path, payload=None):
     # make a request
     try:
        response = requests.request(method, url, json=payload)
-    except requests.RequestExeception as exc:
+    except requests.RequestException as exc:
         print(f"API connection error: {exc}")
         return None
 
@@ -77,6 +77,14 @@ def command_update(args):
 # command: delete
 def command_delete(args):
     result = api_request("DELETE", args.url, f"/inventory/{args.id}")
+    if result is not None:
+        print(json.dumps(result, indent=2))
+        return
+
+# command: search
+def command_search(args):
+    query = f"barcode={args.barcode}" if args.barcode else f"name={args.name}"
+    result = api_request("GET", args.url, f"/api/item?{query}")
     if result is not None:
         print(json.dumps(result, indent=2))
         return

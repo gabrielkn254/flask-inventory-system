@@ -1,5 +1,5 @@
 import argparse
-from utils import command_list, command_view, command_add, command_update, command_delete
+from utils import command_list, command_view, command_add, command_update, command_delete, command_search
 
 BASE_URL = "http://127.0.0.1:5000"
 
@@ -27,18 +27,26 @@ def cli():
     # command: update
     update_parser = sub.add_parser("update", help="Update an item details")
     update_parser.add_argument("--id", required=False, help="Item id to update")
+    update_parser.add_argument("--barcode", required=False, help="Item barcode  to update")
     update_parser.add_argument("--name", required=False, help="Item name to update")
     update_parser.add_argument("--price", required=False, help="Item price  to update")
     update_parser.add_argument("--quantity", required=False, help="Item quantity  to update")
-    update_parser.add_argument("--barcode", required=False, help="Item barcode  to update")
-    update_parser.add_argument("--category", required=False, help="Item category  to update")
-    update_parser.add_argument("--brand", required=False, help="Item brand  to update")
+    update_parser.add_argument("--image", required=False, help="Item image url  to update")
+    update_parser.add_argument("--categories", required=False, help="Item categories  to update")
+    update_parser.add_argument("--brands", required=False, help="Item brands  to update")
+    update_parser.add_argument("--ingredients", required=False, help="Item ingredients  to update")
     update_parser.set_defaults(func=command_update)
 
     # command: delete
     delete_parser = sub.add_parser("delete", help="Delete an item from the inventory database")
     delete_parser.add_argument("--id", required=True, help="Item id you want to delete")
     delete_parser.set_defaults(func=command_delete)
+
+    # command: delete
+    search_parser = sub.add_parser("search", help="Search an item on OpenFoodFacts")
+    search_parser.add_argument("--name", required=False, help="name param of your search")
+    search_parser.add_argument("--barcode", required=False, help="barcode param of your search")
+    search_parser.set_defaults(func=command_search)
 
     # create args object
     args = parser.parse_args()

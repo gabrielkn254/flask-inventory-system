@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify
-from utils import save_db, load_db
+from utils import save_db, load_db, search_product
 
 app = Flask(__name__)
 
@@ -37,30 +37,32 @@ def add_item():
     if quantity < 0 or price < 0:
         return jsonify({"error" : "Quantity & price cannot be negative"}), 400
 
-    # load db & create a item object
-    items = load_db()
-
-    item = {
-        "id": len(items) + 1,
-        "barcode": None,
-        "name": str(data["name"]).strip(),
-        "quantity": quantity,
-        "price": price,
-        "category": None,
-        "brand": None,
-        "ingredients": []
-    }
+    # load db, create & append item object, save db, reload db for response
+    try:
+        openfood_product = search_product(name = str(data["name"]).strip())
+        print(str(openfood_product))
     
-    # append item and save db
-    items.append(item)
-    save_db(items)
+        items = load_db()
+        item = {
+            "id": len(items) + 1,
+            "barcode": openfood_product,
+            "name": str(data["name"]).strip(),
+            "quantity": quantity,
+            "price": price,
+            "image_url": openfood_product.image_url,
+            "categories": openfood_product.categories,
+            "brands": openfood_product.brand,
+            "ingredients": openfood_product.ingredients
+        }
+        
+        items.append(item)
+        save_db(items)
 
-    # reload db for a reponse
-    updated_items = load_db()
-    return jsonify({
-        "message": "Item successfully added",
-        "Item": item,
-        "inventory":updated_items}), 201
+        updated_items = load_db()
+        return jsonify({"Item successfully added!": item, "inventory":updated_items}), 201
+    
+    except Exception as exc:
+        return jsonify({"Error" : f"External API request failed: {exc}"}), 502
 
 # Fetch a single item by ID
 @app.route("/inventory/<int:item_id>", methods=["GET"])
@@ -87,7 +89,7 @@ def update_item(item_id):
     # get & validate data
     data = request.get_json(silent=True) or {}
 
-    allowed_fields = {"barcode", "name", "quantity", "price", "category", "brand", "ingredients"}
+    allowed_fields = {"barcode", "name", "quantity", "price", "image_url", "categories", "brands", "ingredients"}
     unknown_fields = set(data) - allowed_fields
 
     if unknown_fields:
@@ -155,7 +157,21 @@ def delete_item(item_id):
 # Discover an item in openfoodfacts
 @app.route("/api/item", methods=["GET"])
 def api_item():
-    pass
+    barcode = request.args.get("barcode", "").strip()
+    name = request.args.get("name", "").strip()
+
+    if not barcode and not name:
+        return jsonify({"error": "Provide either barcode or name"}), 400
+
+    try:
+        product = search_product(barcode=barcode, name=name)
+    except Exception as exc:
+        return jsonify({"error" : f"External API request failed: {exc}"}), 502
+
+    if not product:
+        return jsonify({"error": "Product not found on OpenFoodFacts"}), 404
+
+    return jsonify({"source": "OpenFoodFacts", "product": product})
 
 
 if __name__ == '__main__':

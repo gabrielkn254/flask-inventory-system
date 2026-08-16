@@ -23,6 +23,7 @@ flask-inventory-system/
 ├── data/
 │   └── db.json
 ├── utils/
+│   └── command_actions.py
 │   └── db_operations.py
 │   └── external_api.py
 └── tests/
@@ -31,3 +32,5 @@ flask-inventory-system/
     ├── test_cli.py
     └── test_external_api.py
 ```
+
+
