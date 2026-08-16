@@ -42,7 +42,7 @@ def cli():
     delete_parser.add_argument("--id", required=True, help="Item id you want to delete")
     delete_parser.set_defaults(func=command_delete)
 
-    # command: delete
+    # command: search
     search_parser = sub.add_parser("search", help="Search an item on OpenFoodFacts")
     search_parser.add_argument("--name", required=False, help="name param of your search")
     search_parser.add_argument("--barcode", required=False, help="barcode param of your search")
