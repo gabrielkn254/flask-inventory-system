@@ -1,7 +1,34 @@
 {
     "inventory": [
         {
-            
+            "id": 1,
+            "barcode": "5449000000996",
+            "name": "Coca-Cola Original Drink",
+            "quantity": 25,
+            "price": 150.0,
+            "category": "Beverages",
+            "brand": "Coca-Cola",
+            "ingredients": []
+        },
+        {
+            "id": 2,
+            "barcode": null,
+            "name": "afia",
+            "quantity": 20,
+            "price": 200.0,
+            "category": null,
+            "brand": null,
+            "ingredients": []
+        },
+        {
+            "id": 3,
+            "barcode": null,
+            "name": "afia",
+            "quantity": 20,
+            "price": 200.0,
+            "category": null,
+            "brand": null,
+            "ingredients": []
         }
     ]
 }

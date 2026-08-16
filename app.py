@@ -1,7 +1,158 @@
-from flask import Flask
+from flask import Flask, request, jsonify
+from utils import save_db, load_db
 
 app = Flask(__name__)
 
-@app.route('/')
+# home
+@app.route("/", methods=["GET"])
 def home():
+    return jsonify({"message": "Welcome to Inventory System"}), 200
+
+# fetch all items
+@app.route("/inventory", methods=["GET"])
+def get_inventory():
+    items = load_db()
+
+    return jsonify({"inventory": items}), 200
+
+# add a new item
+@app.route("/inventory", methods=["POST"])
+def add_item():
+    # get data from request
+    data = request.get_json(silent=True) or {}
+
+    # check if all required fields are there
+    required = ["name", "quantity", "price"]
+    missing = [field for field in required if field not in data]
+    if missing:
+        return jsonify({"error" : f"missing_fields: {missing}"}), 400
+
+    # validate price & quantity values
+    try:
+        quantity = int(data["quantity"])
+        price = float(data["price"])
+    except (TypeError, ValueError):
+        return jsonify({"error" : "Quantity & price must be numbers"}), 400
+
+    if quantity < 0 or price < 0:
+        return jsonify({"error" : "Quantity & price cannot be negative"}), 400
+
+    # load db & create a item object
+    items = load_db()
+
+    item = {
+        "id": len(items) + 1,
+        "barcode": None,
+        "name": str(data["name"]).strip(),
+        "quantity": quantity,
+        "price": price,
+        "category": None,
+        "brand": None,
+        "ingredients": []
+    }
+    
+    # append item and save db
+    items.append(item)
+    save_db(items)
+
+    # reload db for a reponse
+    updated_items = load_db()
+    return jsonify({
+        "message": "Item successfully added",
+        "Item": item,
+        "inventory":updated_items}), 201
+
+# Fetch a single item by ID
+@app.route("/inventory/<int:item_id>", methods=["GET"])
+def get_item(item_id):
+    # load db & get item
+    items = load_db()
+    item = next((i for i in items if i["id"] == item_id), None)
+
+    if item is None:
+        return jsonify({"error": "Item not found"}), 404
+    
+    return jsonify(item), 200
+
+# update a item by ID
+@app.route("/inventory/<int:item_id>", methods=["PATCH"])
+def update_item(item_id):
+    # load db & get item
+    items = load_db()
+    item = next((i for i in items if i["id"] == item_id), None)
+
+    if item is None:
+        return jsonify({
+            "error": "Item not found"}), 404
+
+    # get & validate data
+    data = request.get_json(silent=True) or {}
+
+    allowed_fields = {"barcode", "name", "quantity", "price", "category", "brand", "ingredients"}
+    unknown_fields = set(data) - allowed_fields
+
+    if unknown_fields:
+        return jsonify({"error": f"Invalid fields provided: {unknown_fields}"}), 400
+    
+    if "quantity" in data:
+        try:
+            quantity = int(data["quantity"])
+        except (TypeError, ValueError):
+            return jsonify({"error": "Quantity must be an integer"}), 400
+        if quantity < 0:
+            return jsonify({"error": "Quantity cannot be nagative"}), 400
+        item["quantity"] = quantity
+
+    if "price" in data:
+        try:
+            price = float(data["price"])
+        except (TypeError, ValueError):
+            return jsonify({"error": "Quantity must be a number"}), 400
+        if price < 0:
+            return jsonify({"error": "Price cannot be nagative"}), 400
+        item["price"] = price
+
+    for each in items:
+        if each["id"] == item["id"]:
+            each["quantity"] = item["quantity"]
+            each["price"] = item["price"]
+
+            for field in allowed_fields - {"quantity", "price"}:
+                if field in data:
+                    each[field] = str(data[field].strip())
+            item = each
+
+    save_db(items)
+    return jsonify({"Updated": item}), 200
+
+
+
+
+
+# Delete a product by ID
+@app.route("/inventory/<int:item_id>", methods=["DELETE"])
+def delete_item(item_id):
+    # load db
+    items = load_db()
+
+    # get item
+    item = next((i for i in items if i["id"] == item_id), None)
+
+    if item is None:
+        return jsonify({
+            "error": "item not found"}), 404
+
+    # delete item
+    items.remove(item)
+    return jsonify({
+        "message": "Item deleted successfully",
+        "item": item}), 200
+
+# Discover an item in openfoodfacts
+@app.route("/api/item", methods=["GET"])
+def api_item():
     pass
+
+
+if __name__ == '__main__':
+    app.run(host="127.0.0.1", port=5000, debug=True)
